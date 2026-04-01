@@ -11,6 +11,7 @@ function Osp(){
   const [searchParams] = useSearchParams();
 const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
   const [error, setError] = useState('');
+  const [active, setActive] = useState(false);
   const otpFromQuery = searchParams.get("otp");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -21,6 +22,21 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
     }
     inputRefs.current[0]?.focus();
   }, [email, navigate]);
+  useEffect(() => {
+    const otpString = otp.join('');
+    if (otpString.length === OTP_LENGTH && otp.every(d => d !== '')) {
+      if (otpString === otpFromQuery) {
+        setActive(true);
+        setError('');
+      } else {
+        setActive(false);
+        setError('El código ingresado no es correcto');
+      }
+    } else {
+      setActive(false);
+      setError('');
+    }
+  }, [otp, otpFromQuery]);
 
   const handleChange = (index: number, value: string) => {
     if (value.length > 1) {
@@ -159,7 +175,12 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-gray-900 to-gray-700 text-white py-3 rounded-lg hover:from-gray-800 hover:to-gray-600 transition-all shadow-lg hover:shadow-xl"
+              disabled={!active}
+              className={`w-full py-3 rounded-lg transition-all shadow-lg ${
+                active
+                  ? 'bg-gradient-to-r from-gray-900 to-gray-700 text-white hover:from-gray-800 hover:to-gray-600 hover:shadow-xl'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
             >
               Verificar
             </button>

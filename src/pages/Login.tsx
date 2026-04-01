@@ -41,7 +41,7 @@ function Login(){
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <span>{toast}</span>
-          <button onClick={() => setToast('')} className="ml-2 hover:opacity-75">✕</button>
+          <button onClick={() => setToast('')} className="ml-2 hover:opacity-75" aria-label="Cerrar notificación">✕</button>
         </div>
       )}
       <div className="w-full max-w-md">
@@ -87,7 +87,7 @@ function Login(){
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-gray-900 focus:outline-none transition-colors bg-gray-50 text-gray-900 placeholder:text-gray-400"
               />
               {error && (
-                <p className="mt-2 text-sm text-red-600">{error}</p>
+                <p role="alert" className="mt-2 text-sm text-red-600">{error}</p>
               )}
             </div>
 
@@ -100,7 +100,7 @@ function Login(){
           </form>
 
           <div className="mt-8 text-center">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-gray-400" role="note">
               Al continuar, acepta nuestros términos y condiciones
             </p>
           </div>

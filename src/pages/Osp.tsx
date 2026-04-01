@@ -176,7 +176,7 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
                 ))}
               </div>
               {error && (
-                <p className="text-sm text-red-600 text-center">{error}</p>
+                <p className="text-sm text-red-600 text-center" role='alert'>{error}</p>
               )}
             </div>
 

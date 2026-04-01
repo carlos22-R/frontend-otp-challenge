@@ -16,7 +16,7 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    if (!email || !otpFromQuery) {
+    if (!email || !otpFromQuery || !/^\d{4}$/.test(otpFromQuery)) {
       navigate('/', { state: { error: 'Debe autenticarse primero' } });
       return;
     }
@@ -73,19 +73,17 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').slice(0, OTP_LENGTH);
+    const digits = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, OTP_LENGTH);
 
-    if (!/^\d+$/.test(pastedData)) {
-      return;
-    }
+    if (!digits) return;
 
     const newOtp = [...otp];
-    for (let i = 0; i < pastedData.length && i < OTP_LENGTH; i++) {
-      newOtp[i] = pastedData[i];
+    for (let i = 0; i < digits.length; i++) {
+      newOtp[i] = digits[i];
     }
     setOtp(newOtp);
 
-    const nextIndex = Math.min(pastedData.length, OTP_LENGTH - 1);
+    const nextIndex = Math.min(digits.length, OTP_LENGTH - 1);
     inputRefs.current[nextIndex]?.focus();
   };
 
@@ -165,6 +163,7 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
                   <input
                     key={index}
                     ref={(el) => { inputRefs.current[index] = el; }}
+                    aria-label={`Dígito ${index + 1} de ${OTP_LENGTH}`}
                     type="text"
                     inputMode="numeric"
                     maxLength={1}
@@ -184,6 +183,7 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
             <button
               type="submit"
               disabled={!active}
+              aria-disabled={!active}
               className={`w-full py-3 rounded-lg transition-all shadow-lg ${
                 active
                   ? 'bg-gradient-to-r from-gray-900 to-gray-700 text-white hover:from-gray-800 hover:to-gray-600 hover:shadow-xl'

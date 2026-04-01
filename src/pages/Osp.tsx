@@ -16,12 +16,12 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    if (!email) {
+    if (!email || !otpFromQuery) {
       navigate('/', { state: { error: 'Debe autenticarse primero' } });
       return;
     }
     inputRefs.current[0]?.focus();
-  }, [email, navigate]);
+  }, [email, navigate, otpFromQuery]);
   useEffect(() => {
     const otpString = otp.join('');
     if (otpString.length === OTP_LENGTH && otp.every(d => d !== '')) {
@@ -60,6 +60,14 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
+    }
+    if (e.key === 'ArrowLeft' && index > 0) {
+      e.preventDefault();
+      inputRefs.current[index - 1]?.focus();
+    }
+    if (e.key === 'ArrowRight' && index < OTP_LENGTH - 1) {
+      e.preventDefault();
+      inputRefs.current[index + 1]?.focus();
     }
   };
 
@@ -182,7 +190,7 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >
-              Verificar
+              Continuar
             </button>
           </form>
 

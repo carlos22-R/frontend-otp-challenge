@@ -14,7 +14,7 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
   const [active, setActive] = useState(false);
   const otpFromQuery = searchParams.get("otp");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
+// Validación inicial para asegurar que el usuario viene del login con un email y OTP válido
   useEffect(() => {
     if (!email || !otpFromQuery || !/^\d{4}$/.test(otpFromQuery)) {
       navigate('/', { state: { error: 'Debe autenticarse primero' } });
@@ -22,6 +22,7 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
     }
     inputRefs.current[0]?.focus();
   }, [email, navigate, otpFromQuery]);
+  // Validación del OTP cada vez que cambia el estado de los dígitos o el OTP de la URL
   useEffect(() => {
     const otpString = otp.join('');
     if (otpString.length === OTP_LENGTH && otp.every(d => d !== '')) {
@@ -38,6 +39,7 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
     }
   }, [otp, otpFromQuery]);
 
+  // Manejo de cambios en los inputs
   const handleChange = (index: number, value: string) => {
     if (value.length > 1) {
       value = value[0];
@@ -57,6 +59,7 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
     }
   };
 
+// Manejo de teclas para navegación entre inputs
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
@@ -70,7 +73,7 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
       inputRefs.current[index + 1]?.focus();
     }
   };
-
+// Manejo de pegado para permitir pegar el OTP completo
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
     const digits = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, OTP_LENGTH);
@@ -86,8 +89,8 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
     const nextIndex = Math.min(digits.length, OTP_LENGTH - 1);
     inputRefs.current[nextIndex]?.focus();
   };
-
-  const handleSubmit = (e: React.FormEvent) => {
+// Manejo de envío del formulario para verificar el OTP
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const otpString = otp.join('');
@@ -96,12 +99,44 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
       return;
     }
 
-    setError('');
-    console.log('OTP verificado:', otpString);
-    navigate('/success', { state: { verified: true } });
-  };
+    try {
+      const res = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp: otpString }),
+      });
+      const data = await res.json();
 
-  const handleResend = () => {
+      if (data.valid) {
+        navigate('/success', { state: { verified: true } });
+      } else {
+        setError(data.error || 'El código ingresado no es correcto');
+      }
+    } catch {
+      setError('Error de conexión con el servidor');
+    }
+  };
+// Manejo de reenvío del OTP para solicitar un nuevo código
+  const handleResend = async () => {
+    try {
+      const res = await fetch('/api/resend-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        // Actualizar el OTP en la URL sin recargar
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('otp', data.otp);
+        window.history.replaceState({}, '', `?${newParams.toString()}`);
+        window.location.reload();
+      }
+    } catch {
+      setError('Error al reenviar el código');
+    }
+
     setOtp(Array(OTP_LENGTH).fill(''));
     setError('');
     inputRefs.current[0]?.focus();

@@ -5,10 +5,11 @@ function Login(){
     const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
+  const [loading, setLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
-     const handleSubmit = (e: React.FormEvent) => {
+     const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email) {
@@ -23,8 +24,29 @@ function Login(){
     }
 
     setError('');
-    navigate("/verify?otp=1234", { state: { email } });
+    setLoading(true);
+// Enviar solicitud al backend para generar y enviar el OTP
+    try {
+      const res = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setError(data.error || 'Error al enviar el código');
+        return;
+      }
+
+      navigate(`/verify?otp=${data.otp}`, { state: { email } });
+    } catch {
+      setError('Error de conexión con el servidor');
+    } finally {
+      setLoading(false);
+    }
   };
+  // Mostrar notificación de error si se redirige con un mensaje de error en el estado
   useEffect(() => {
     if(location.state?.error){
       setToast(location.state.error);
@@ -93,9 +115,10 @@ function Login(){
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-gray-900 to-gray-700 text-white py-3 rounded-lg hover:from-gray-800 hover:to-gray-600 transition-all shadow-lg hover:shadow-xl"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-gray-900 to-gray-700 text-white py-3 rounded-lg hover:from-gray-800 hover:to-gray-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Continuar
+              {loading ? 'Enviando...' : 'Continuar'}
             </button>
           </form>
 

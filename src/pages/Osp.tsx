@@ -127,10 +127,7 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
       const data = await res.json();
 
       if (data.success) {
-        // Actualizar el OTP en la URL sin recargar
-        const newParams = new URLSearchParams(searchParams);
-        newParams.set('otp', data.otp);
-        window.history.replaceState({state: { email }}, '', `?${newParams.toString()}`);
+        navigate(`/verify?otp=${data.otp}`, { state: { email } });
         window.location.reload();
       }
     } catch {

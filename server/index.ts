@@ -7,7 +7,7 @@ const PORT = 3001;
 app.use(cors());
 app.use(express.json());
 
-// Almacén temporal de OTPs en memoria (en producción usarías Redis o BD)
+// Almacén temporal de OTPs en memoria 
 const otpStore = new Map<string, { otp: string; expiresAt: number }>();
 
 // Genera OTP de 4 dígitos
@@ -29,8 +29,6 @@ app.post('/api/send-otp', (req, res) => {
 
   otpStore.set(email, { otp, expiresAt });
 
-  // En producción enviarías el OTP por email (SendGrid, Resend, etc.)
-  // Para demo, lo devolvemos en la respuesta y lo mostramos en consola
   console.log(`[OTP] ${email} → ${otp}`);
 
   res.json({ success: true, otp });

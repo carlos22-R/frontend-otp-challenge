@@ -130,7 +130,7 @@ const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
         // Actualizar el OTP en la URL sin recargar
         const newParams = new URLSearchParams(searchParams);
         newParams.set('otp', data.otp);
-        window.history.replaceState({}, '', `?${newParams.toString()}`);
+        window.history.replaceState({state: { email }}, '', `?${newParams.toString()}`);
         window.location.reload();
       }
     } catch {
